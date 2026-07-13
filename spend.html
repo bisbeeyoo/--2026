@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>💰 지출내역</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#f0f0f0;min-height:100vh;}
+.header{background:linear-gradient(135deg,#1e8449,#27ae60);padding:14px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.back-link{background:rgba(255,255,255,.2);border:none;color:white;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0;}
+.header-title{color:white;font-size:17px;font-weight:700;flex:1;}
+.header-btns{display:flex;gap:6px;}
+.undo-btn{background:rgba(255,255,255,.2);border:none;color:white;border-radius:10px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600;display:none;}
+.reset-btn{background:rgba(231,76,60,.7);border:none;color:white;border-radius:10px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600;}
+.container{max-width:480px;margin:0 auto;padding:14px 14px 60px;}
+.save-badge{background:#e8f5e9;border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:#2e7d32;text-align:center;font-weight:500;}
+.budget-box{background:linear-gradient(135deg,#1e8449,#27ae60);border-radius:14px;padding:14px 16px;margin-bottom:12px;}
+.budget-title{color:white;font-size:13px;font-weight:700;margin-bottom:8px;}
+.budget-row{display:flex;gap:8px;align-items:center;}
+.budget-input{flex:1;border:none;border-radius:10px;padding:10px 12px;font-size:15px;font-family:inherit;outline:none;}
+.budget-unit{color:rgba(255,255,255,.85);font-size:12px;white-space:nowrap;}
+#budget-display{margin-top:6px;font-size:12px;color:rgba(255,255,255,.85);text-align:right;min-height:16px;}
+.day-card{background:white;border-radius:14px;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,.1);margin-bottom:12px;}
+.day-header{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+.day-name{color:white;font-size:15px;font-weight:700;}
+.day-total-disp{color:white;font-size:12px;font-weight:600;}
+.day-body{padding:10px 14px 14px;}
+.cat-row{margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f5f5f5;}
+.cat-row:last-of-type{border-bottom:none;}
+.cat-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.cat-name{font-size:12px;font-weight:600;color:#555;}
+.cat-total{font-size:11px;color:#27ae60;font-weight:700;margin-left:4px;}
+.add-btn{background:#e8f5e9;border:none;border-radius:8px;padding:4px 10px;font-size:11px;color:#27ae60;cursor:pointer;font-family:inherit;font-weight:600;}
+.entry-row{display:flex;justify-content:space-between;align-items:center;background:#f9f9f9;border-radius:8px;padding:7px 10px;margin-bottom:3px;}
+.entry-memo{font-size:12px;color:#555;flex:1;}
+.entry-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.entry-vnd{font-size:12px;font-weight:700;color:#27ae60;}
+.entry-krw{font-size:10px;color:#aaa;}
+.del-btn{background:none;border:none;color:#ccc;cursor:pointer;font-size:16px;padding:0;line-height:1;}
+.progress-wrap{margin-top:8px;background:#f0f0f0;border-radius:10px;height:8px;overflow:hidden;}
+.progress-bar{height:100%;border-radius:10px;transition:.4s;}
+.progress-label{font-size:11px;color:#aaa;margin-top:3px;text-align:right;}
+.day-sum{border-top:2px solid #f0f0f0;margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;align-items:center;}
+.day-sum-label{font-size:13px;font-weight:700;color:#333;}
+.day-sum-vnd{font-size:16px;font-weight:700;color:#27ae60;}
+.day-sum-krw{font-size:12px;color:#888;}
+.grand-box{background:linear-gradient(135deg,#1e8449,#27ae60);border-radius:14px;padding:16px;text-align:center;color:white;margin-bottom:12px;}
+.grand-title{font-size:14px;font-weight:700;margin-bottom:8px;opacity:.9;}
+.grand-vnd{font-size:28px;font-weight:900;}
+.grand-krw{font-size:17px;margin-top:4px;opacity:.9;}
+.budget-remain{font-size:12px;margin-top:10px;background:rgba(0,0,0,.15);border-radius:10px;padding:8px;}
+.tips{background:white;border-radius:14px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
+.tips-title{font-size:13px;font-weight:700;color:#27ae60;margin-bottom:8px;}
+.tips-content{font-size:12px;color:#666;line-height:1.9;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="index.html" class="back-link">←</a>
+  <div class="header-title">💰 지출내역</div>
+  <div class="header-btns">
+    <button class="undo-btn" id="undo-btn" onclick="undoDelete()">↩️ 되돌리기</button>
+    <button class="reset-btn" onclick="confirmReset()">🗑️ 모두 지우기</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="save-badge">💾 입력한 내용은 자동으로 저장돼요</div>
+
+  <div class="budget-box">
+    <div class="budget-title">🎯 1인 하루 예산 설정</div>
+    <div class="budget-row">
+      <input class="budget-input" id="budget-input" type="number" placeholder="예) 500000 (동)" oninput="updateBudget()">
+      <span class="budget-unit">동/일</span>
+    </div>
+    <div id="budget-display"></div>
+  </div>
+
+  <div id="days-container"></div>
+
+  <div id="grand-section" style="display:none;">
+    <div class="grand-box">
+      <div class="grand-title">📊 4일 전체 지출 합계</div>
+      <div class="grand-vnd" id="grand-vnd"></div>
+      <div class="grand-krw" id="grand-krw"></div>
+      <div class="budget-remain" id="budget-remain" style="display:none;"></div>
+    </div>
+    <div class="tips">
+      <div class="tips-title">💡 절약 꿀팁</div>
+      <div class="tips-content">
+        ✅ 식당 물은 유료 — 편의점 생수 미리 사두기<br>
+        ✅ 그랩 카드결제가 현금보다 환율 이득<br>
+        ✅ 마트 쇼핑은 마지막날 한 번에 몰아서<br>
+        ✅ 흥정은 처음 가격의 50%부터 시작<br>
+        ✅ 야시장은 늦을수록 가격이 내려가는 경향
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var RATE = 0.056;
+var DAYS = ['7/26 (일)', '7/27 (월)', '7/28 (화)', '7/29 (수)'];
+var CATS = ['아침', '점심', '저녁', '간식', '카페', '기념품', '기타'];
+var data = {}, budget = 0;
+var lastDeleted = null; // for undo
+
+// ── Storage ──
+function load() {
+  try { var s = localStorage.getItem('nt_spend_v2'); if (s) data = JSON.parse(s); } catch(e) {}
+  try { budget = parseFloat(localStorage.getItem('nt_budget_v2')) || 0; } catch(e) {}
+}
+function save() {
+  try { localStorage.setItem('nt_spend_v2', JSON.stringify(data)); } catch(e) {
+    alert('저장 실패! 브라우저 저장 공간을 확인해주세요.');
+  }
+}
+
+// ── Budget ──
+function updateBudget() {
+  budget = parseFloat(document.getElementById('budget-input').value) || 0;
+  try { localStorage.setItem('nt_budget_v2', budget); } catch(e) {}
+  var krw = Math.round(budget * RATE / 100) * 100;
+  document.getElementById('budget-display').textContent = budget ? budget.toLocaleString() + '동 = 약 ' + krw.toLocaleString() + '원' : '';
+  render();
+}
+
+// ── Add / Delete ──
+function addEntry(day, cat) {
+  var amt = parseFloat(prompt('금액 입력 (동)\n예) 88000', ''));
+  if (!amt || isNaN(amt) || amt <= 0) return;
+  var memo = prompt('메모 (선택)\n예) 마담프엉', '') || '';
+  if (!data[day]) data[day] = {};
+  if (!data[day][cat]) data[day][cat] = [];
+  data[day][cat].push({ amt: amt, memo: memo });
+  save();
+  render();
+}
+
+function delEntry(day, cat, idx) {
+  // Save for undo
+  lastDeleted = { day: day, cat: cat, idx: idx, entry: JSON.parse(JSON.stringify(data[day][cat][idx])) };
+  data[day][cat].splice(idx, 1);
+  save();
+  render();
+  // Show undo button
+  var ub = document.getElementById('undo-btn');
+  ub.style.display = 'block';
+  clearTimeout(window._undoTimer);
+  window._undoTimer = setTimeout(function() {
+    ub.style.display = 'none';
+    lastDeleted = null;
+  }, 8000);
+}
+
+function undoDelete() {
+  if (!lastDeleted) return;
+  var d = lastDeleted;
+  if (!data[d.day]) data[d.day] = {};
+  if (!data[d.day][d.cat]) data[d.day][d.cat] = [];
+  data[d.day][d.cat].splice(d.idx, 0, d.entry);
+  lastDeleted = null;
+  document.getElementById('undo-btn').style.display = 'none';
+  save();
+  render();
+}
+
+// ── Reset ──
+function confirmReset() {
+  if (confirm('⚠️ 정말로 모든 지출 내역을 삭제할까요?\n\n이 작업은 되돌릴 수 없어요!')) {
+    data = {};
+    lastDeleted = null;
+    document.getElementById('undo-btn').style.display = 'none';
+    save();
+    render();
+    alert('✅ 모든 내역이 삭제됐어요.');
+  }
+}
+
+// ── Totals ──
+function dayTotal(day) {
+  var t = 0;
+  if (!data[day]) return 0;
+  Object.values(data[day]).forEach(function(arr) { arr.forEach(function(e) { t += e.amt; }); });
+  return t;
+}
+function grandTotal() { return DAYS.reduce(function(s, d) { return s + dayTotal(d); }, 0); }
+
+// ── Render ──
+function render() {
+  var container = document.getElementById('days-container');
+  container.innerHTML = '';
+
+  DAYS.forEach(function(day) {
+    var dt = dayTotal(day);
+    var dtK = Math.round(dt * RATE / 100) * 100;
+    var over = budget && dt > budget;
+    var hc = over ? '#e74c3c' : '#27ae60';
+
+    var card = document.createElement('div');
+    card.className = 'day-card';
+
+    var h = '<div class="day-header" style="background:' + hc + ';">'
+      + '<span class="day-name">' + day + '</span>'
+      + '<span class="day-total-disp">' + (dt ? dt.toLocaleString() + '동' : '0동') + (over ? ' ⚠️초과' : '') + '</span>'
+      + '</div>';
+
+    var b = '<div class="day-body">';
+    CATS.forEach(function(cat) {
+      var entries = (data[day] && data[day][cat]) || [];
+      var ct = entries.reduce(function(s, e) { return s + e.amt; }, 0);
+      b += '<div class="cat-row">'
+        + '<div class="cat-header">'
+        + '<span class="cat-name">' + cat + (ct ? ' <span class="cat-total">' + ct.toLocaleString() + '동</span>' : '') + '</span>'
+        + '<button class="add-btn" onclick="addEntry(\'' + day + '\',\'' + cat + '\')">+ 추가</button>'
+        + '</div>';
+      entries.forEach(function(e, i) {
+        b += '<div class="entry-row">'
+          + '<span class="entry-memo">' + (e.memo || '—') + '</span>'
+          + '<div class="entry-right">'
+          + '<div style="text-align:right;">'
+          + '<div class="entry-vnd">' + e.amt.toLocaleString() + '동</div>'
+          + '<div class="entry-krw">≈' + (Math.round(e.amt * RATE / 100) * 100).toLocaleString() + '원</div>'
+          + '</div>'
+          + '<button class="del-btn" onclick="delEntry(\'' + day + '\',\'' + cat + '\',' + i + ')">✕</button>'
+          + '</div></div>';
+      });
+      b += '</div>';
+    });
+
+    // Progress bar
+    if (budget) {
+      var pct = Math.min(dt / budget * 100, 100);
+      var bc = over ? '#e74c3c' : pct > 80 ? '#e67e22' : '#27ae60';
+      b += '<div class="progress-wrap"><div class="progress-bar" style="width:' + pct + '%;background:' + bc + ';"></div></div>'
+        + '<div class="progress-label">예산 ' + budget.toLocaleString() + '동 중 ' + Math.round(pct) + '% 사용</div>';
+    }
+
+    // Day sum
+    b += '<div class="day-sum">'
+      + '<span class="day-sum-label">일일 합계</span>'
+      + '<div style="text-align:right;">'
+      + '<div class="day-sum-vnd">' + dt.toLocaleString() + '동</div>'
+      + '<div class="day-sum-krw">≈ ' + dtK.toLocaleString() + '원</div>'
+      + '</div></div>';
+
+    b += '</div>';
+    card.innerHTML = h + b;
+    container.appendChild(card);
+  });
+
+  // Grand total
+  var gt = grandTotal();
+  var gtK = Math.round(gt * RATE / 100) * 100;
+  var gs = document.getElementById('grand-section');
+  gs.style.display = gt > 0 ? 'block' : 'none';
+  document.getElementById('grand-vnd').textContent = gt.toLocaleString() + '동';
+  document.getElementById('grand-krw').textContent = '≈ ' + gtK.toLocaleString() + '원';
+
+  var br = document.getElementById('budget-remain');
+  if (budget) {
+    br.style.display = 'block';
+    var remain = Math.max(0, budget * 4 - gt);
+    var used4 = budget * 4;
+    br.innerHTML = '4일 예산: ' + used4.toLocaleString() + '동<br>남은 예산: <b>' + remain.toLocaleString() + '동 (≈' + (Math.round(remain * RATE / 100) * 100).toLocaleString() + '원)</b>';
+  } else {
+    br.style.display = 'none';
+  }
+}
+
+// ── Init ──
+window.onload = function() {
+  load();
+  if (budget) {
+    document.getElementById('budget-input').value = budget;
+    var krw = Math.round(budget * RATE / 100) * 100;
+    document.getElementById('budget-display').textContent = budget.toLocaleString() + '동 = 약 ' + krw.toLocaleString() + '원';
+  }
+  render();
+};
+</script>
+</body>
+</html>
